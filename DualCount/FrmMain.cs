@@ -28,9 +28,9 @@ namespace DualCount
 
         private void FrmMain_Load(object sender, EventArgs e)
         {
-            txtCountA.Text = "10000000";
-            txtCountB.Text = "10000000";
-            Thread threadWatcher = new Thread(new ThreadStart(RunWatcher));
+            txtCountA.Text = "100000000";
+            txtCountB.Text = "100000000";
+            threadWatcher = new Thread(new ThreadStart(RunWatcher));
             threadWatcher.Start();
         }
 
@@ -50,8 +50,6 @@ namespace DualCount
                 quitAandBThreads = false;
                 long.TryParse(txtCountA.Text, out countA);
                 long.TryParse(txtCountB.Text, out countB);
-                finishedA.Reset();
-                finishedB.Reset();
                 threadA = new Thread(new ThreadStart(RunA));
                 threadB = new Thread(new ThreadStart(RunB));
                 threadA.Start();
@@ -127,8 +125,6 @@ namespace DualCount
 
         void ThreadsFinished()
         {
-            threadA.Join();
-            threadB.Join();            
             EnableUI(true);
             btnStart.Enabled = true;
             txtResult.Text = sharedCounter.ToString("D");
@@ -136,14 +132,6 @@ namespace DualCount
 
         void WatcherFinished()
         {
-            if (threadA != null)
-            {
-                threadA.Join();
-            }
-            if (threadB != null)
-            {
-                threadB.Join();
-            }
             watcherIsFinished = true;
             this.Close();
         }
@@ -163,12 +151,22 @@ namespace DualCount
                 {
                     break;
                 }
+                threadA.Join();
+                threadB.Join();
                 finishedA.Reset();
                 finishedB.Reset();
                 //Callback on the STA.
                 this.Invoke(new MethodInvoker(ThreadsFinished));
             }
             quitAandBThreads = true;
+            if (threadA != null)
+            {
+                threadA.Join();
+            }
+            if (threadB != null)
+            {
+                threadB.Join();
+            }
             //Callback on the STA.
             this.Invoke(new MethodInvoker(WatcherFinished));
         }
@@ -185,5 +183,4 @@ namespace DualCount
             }
         }
     }
-
 }
